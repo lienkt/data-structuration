@@ -33,7 +33,7 @@ public class BatchConfiguration {
 	public JdbcCursorItemReader<Contact> reader(DataSource dataSource) {
 		JdbcCursorItemReader<Contact> itemReader = new JdbcCursorItemReader();
 		itemReader.setDataSource(dataSource);
-		itemReader.setSql("select contact_email, contact_address, contact_first_name from contacts");
+		itemReader.setSql("select * from contacts");
 		itemReader.setRowMapper(new ContactRowMapper());
 		return  itemReader;
 	}
@@ -42,7 +42,7 @@ public class BatchConfiguration {
 	public ContactItemProcessor processor() {
 		return new ContactItemProcessor();
 	}
-	
+//    .sql("INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)")
 	@Bean
 	public JdbcBatchItemWriter<Contact> writer(DataSource dataSource) {
 		return new JdbcBatchItemWriterBuilder<Contact>()
@@ -56,13 +56,13 @@ public class BatchConfiguration {
 						+ "contact_country, "
 						+ "contact_birthdate) "
 						+ "VALUES ("
-						+ ":contact_email, "
-						+ ":contact_first_name, "
-						+ ":contact_last_name, "
-						+ ":contact_address, "
-						+ ":contact_city, "
-						+ ":contact_country, "
-						+ ":contact_birthdate)")
+						+ ":email, "
+						+ ":firstName, "
+						+ ":lastName, "
+						+ ":address, "
+						+ ":city, "
+						+ ":country, "
+						+ ":birthdate)")
 				.dataSource(dataSource)
 				.build();
 	}
