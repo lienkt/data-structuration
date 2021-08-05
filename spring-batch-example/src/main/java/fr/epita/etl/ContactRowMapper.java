@@ -5,8 +5,12 @@ import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
+/**
+ * The Contact Row Mapper
+ * @author LienKT
+ */
+
 public class ContactRowMapper implements RowMapper<Contact> {
-//	public static final String ID_COLUMN = "id";
     public static final String EMAIL_COLUMN = "contact_email";
     public static final String FIRST_NAME_COLUMN = "contact_first_name";
     public static final String LAST_NAME_COLUMN = "contact_last_name";
@@ -18,8 +22,6 @@ public class ContactRowMapper implements RowMapper<Contact> {
 	@Override
 	public Contact mapRow(ResultSet rs, int i) throws SQLException {
 		Contact contact = new Contact();
-
-//		contact.setId(rs.getInt(ID_COLUMN));
 		contact.setEmail(rs.getString(EMAIL_COLUMN));
 		contact.setFirstName(rs.getString(FIRST_NAME_COLUMN));
 		contact.setLastName(rs.getString(LAST_NAME_COLUMN));

@@ -1,5 +1,10 @@
 package fr.epita.etl;
 
+/**
+ * The Item State
+ * @author LienKT
+ */
+
 public class ItemState {
 	private String email;
 	private String state;

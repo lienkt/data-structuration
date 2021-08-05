@@ -2,6 +2,11 @@ package fr.epita.etl;
 
 import java.util.Date;
 
+/**
+ * The Contact
+ * @author LienKT
+ */
+
 public class Contact {
 
 	private String email;
