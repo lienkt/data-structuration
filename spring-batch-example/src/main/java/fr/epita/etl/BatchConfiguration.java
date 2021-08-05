@@ -8,6 +8,7 @@ import org.springframework.batch.core.configuration.annotation.EnableBatchProces
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
 import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import fr.epita.etl.processors.ContactItemProcessor;
+import fr.epita.etl.processors.PrepareEmailProcessor;
 
 @Configuration
 @EnableBatchProcessing
@@ -27,7 +29,6 @@ public class BatchConfiguration {
 
 	@Autowired
 	public StepBuilderFactory stepBuilderFactory;
-
 
 	@Bean
 	public JdbcCursorItemReader<Contact> reader(DataSource dataSource) {
@@ -42,7 +43,8 @@ public class BatchConfiguration {
 	public ContactItemProcessor processor() {
 		return new ContactItemProcessor();
 	}
-//    .sql("INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)")
+	/*
+    .sql("INSERT INTO people (first_name, last_name) VALUES (:firstName, :lastName)")
 	@Bean
 	public JdbcBatchItemWriter<Contact> writer(DataSource dataSource) {
 		return new JdbcBatchItemWriterBuilder<Contact>()
@@ -65,10 +67,24 @@ public class BatchConfiguration {
 						+ ":birthdate)")
 				.dataSource(dataSource)
 				.build();
+	}*/
+	
+	@Bean
+	public JdbcBatchItemWriter<ItemState> writer(DataSource dataSource) {
+		return new JdbcBatchItemWriterBuilder<ItemState>()
+				.itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+				.sql("INSERT INTO item_state ("
+						+ "email, "
+						+ "state) "
+						+ "VALUES ("
+						+ ":email, "
+						+ ":state)")
+				.dataSource(dataSource)
+				.build();
 	}
 
 	@Bean
-	public Job importUserJob(JobCompletionNotificationListener listener, Step step1) {
+	public Job importStateJob(JobCompletionNotificationListener listener, Step step1) {
 		return jobBuilderFactory.get("importUserJob")
 				.incrementer(new RunIdIncrementer())
 				.listener(listener)
@@ -78,12 +94,67 @@ public class BatchConfiguration {
 	}
 
 	@Bean
-	public Step step1(JdbcCursorItemReader<Contact> reader,JdbcBatchItemWriter<Contact> writer) {
+	public Step step1(JdbcCursorItemReader<Contact> reader,JdbcBatchItemWriter<ItemState> writer) {
 		return stepBuilderFactory.get("step1")
-				.<Contact, Contact> chunk(10)
+				.<Contact, ItemState> chunk(10)
 				.reader(reader)
 				.processor(processor())
 				.writer(writer)
+				.build();
+	}
+
+	@Bean
+	public JdbcCursorItemReader<Contact> prepareEmailReader(DataSource dataSource) {
+		JdbcCursorItemReader<Contact> itemReader = new JdbcCursorItemReader();
+		itemReader.setDataSource(dataSource);
+		itemReader.setSql("SELECT "
+				+ "contact_email, "
+				+ "contact_first_name, "
+				+ "contact_last_name, "
+				+ "contact_address, "
+				+ "contact_city, "
+				+ "contact_country, "
+				+ "contact_birthdate "
+				+ "FROM contacts "
+				+ "INNER JOIN item_state "
+				+ "ON email = contact_email");
+		itemReader.setRowMapper(new ContactRowMapper());
+		return  itemReader;
+	}
+
+	@Bean
+	public PrepareEmailProcessor prepareEmailProcessor() {
+		return new PrepareEmailProcessor();
+	}
+
+	@Bean
+	public JdbcBatchItemWriter<ItemState> prepareEmailWriter(DataSource dataSource) {
+		return new JdbcBatchItemWriterBuilder<ItemState>()
+				.itemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>())
+				.sql("UPDATE item_state "
+						+ "SET state = :state "
+						+ "WHERE email = :email ")
+				.dataSource(dataSource)
+				.build();
+	}
+
+	@Bean
+	public Job prepareEmailJob(JobCompletionNotificationListener listener, Step step2) {
+		return jobBuilderFactory.get("importUserJob")
+				.incrementer(new RunIdIncrementer())
+				.listener(listener)
+				.flow(step2)
+				.end()
+				.build();
+	}
+
+	@Bean
+	public Step step2(JdbcCursorItemReader<Contact> prepareEmailReader,JdbcBatchItemWriter<ItemState> prepareEmailWriter) {
+		return stepBuilderFactory.get("step2")
+				.<Contact, ItemState> chunk(10)
+				.reader(prepareEmailReader)
+				.processor(prepareEmailProcessor())
+				.writer(prepareEmailWriter)
 				.build();
 	}
 

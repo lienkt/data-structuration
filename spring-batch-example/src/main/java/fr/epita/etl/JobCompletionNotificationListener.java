@@ -29,13 +29,13 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
 		if(jobExecution.getStatus() == BatchStatus.COMPLETED) {
 			log.info("!!! JOB FINISHED! Time to verify the results");
 
-			jdbcTemplate.query("SELECT first_name, last_name FROM people",
-					(rs, row) -> new Person(
-							rs.getString(1),
-							rs.getString(2))
-			).forEach(person -> log.info("Found <" + person + "> in the database."));
-		    
-		    jdbcTemplate.query("SELECT contact_email, state FROM item_state",
+//			jdbcTemplate.query("SELECT first_name, last_name FROM people",
+//					(rs, row) -> new Person(
+//							rs.getString(1),
+//							rs.getString(2))
+//			).forEach(person -> log.info("Found <" + person + "> in the database."));
+//		    
+		    jdbcTemplate.query("SELECT email, state FROM item_state",
 					(rs, row) -> new ItemState(
 							rs.getString(1),
 							rs.getString(2))
@@ -43,24 +43,24 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
 
 		    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");  
 		    
-			jdbcTemplate.query("SELECT contact_email, contact_first_name, contact_last_name, contact_address, contact_city, contact_country, contact_birthdate FROM contacts",
-					(rs, row) -> {
-						try {
-							return new Contact(
-									rs.getString(1),
-									rs.getString(2),
-									rs.getString(3),
-									rs.getString(4),
-									rs.getString(5),
-									rs.getString(6),
-									formatter.parse(rs.getString(7)));
-						} catch (ParseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						return new Contact();
-					}
-			).forEach(contact -> log.info("Found <" + contact + "> in the database."));
+//			jdbcTemplate.query("SELECT contact_email, contact_first_name, contact_last_name, contact_address, contact_city, contact_country, contact_birthdate FROM contacts",
+//					(rs, row) -> {
+//						try {
+//							return new Contact(
+//									rs.getString(1),
+//									rs.getString(2),
+//									rs.getString(3),
+//									rs.getString(4),
+//									rs.getString(5),
+//									rs.getString(6),
+//									formatter.parse(rs.getString(7)));
+//						} catch (ParseException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//						return new Contact();
+//					}
+//			).forEach(contact -> log.info("Found <" + contact + "> in the database."));
 		
 		
 		}

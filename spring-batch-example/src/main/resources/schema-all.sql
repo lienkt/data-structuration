@@ -9,8 +9,8 @@ CREATE TABLE people  (
 DROP TABLE item_state IF EXISTS;
 
 CREATE TABLE item_state  (
-	contact_email VARCHAR(100),
-    state VARCHAR(20)
+	email VARCHAR(100),
+    state VARCHAR(50)
 );
 
 DROP TABLE contacts IF EXISTS;
