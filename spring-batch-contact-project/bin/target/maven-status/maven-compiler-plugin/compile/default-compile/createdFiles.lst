@@ -1,0 +1,6 @@
+fr\epita\etl\Person.class
+fr\epita\etl\JobCompletionNotificationListener.class
+fr\epita\etl\BatchProcessingApplication.class
+fr\epita\etl\BatchConfiguration.class
+fr\epita\etl\BatchConfiguration$1.class
+fr\epita\etl\processors\PersonItemProcessor.class
